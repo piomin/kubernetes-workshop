@@ -1,0 +1,3 @@
+# Project exclude paths
+/caller-service/target/
+/callme-service/target/

@@ -1,0 +1,8 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: caller-service
+build:
+  artifacts:
+  - image: piomin/caller-service
+    jib: {}

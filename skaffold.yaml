@@ -1,0 +1,18 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: kubernetes-workshop
+build:
+  artifacts:
+    - image: piomin/callme-service
+      jib:
+        project: callme-service
+    - image: piomin/caller-service
+      jib:
+        project: caller-service
+deploy:
+  kubectl:
+    manifests:
+    - callme-service/k8s/*.yaml
+    - caller-service/k8s/*.yaml
+

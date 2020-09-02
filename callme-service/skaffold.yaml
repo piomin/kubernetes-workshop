@@ -1,0 +1,8 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: callme-service
+build:
+  artifacts:
+  - image: piomin/callme-service
+    jib: {}
