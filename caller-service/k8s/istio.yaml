@@ -34,9 +34,6 @@ spec:
         - destination:
             host: caller-service.test.svc.cluster.local
             subset: v1
-      retries:
-        attempts: 3
-        retryOn: 5xx
     - match:
         - uri:
             prefix: "/caller"
@@ -49,11 +46,6 @@ spec:
         - destination:
             host: caller-service.test.svc.cluster.local
             subset: v2
-      timeout: 1s
-      retries:
-        attempts: 3
-        retryOn: 5xx
-        perTryTimeout: 0.33s
     - match:
         - uri:
             prefix: "/caller"

@@ -1,3 +1,7 @@
+# Kubernetes Workshop
+Checkout branch `master`. It contains the starting version of source code. For the final version switch to branch `final`.
+With the source code version in `master` you can follow the instructions.
+
 ## Table of Contents
 1. [Prerequisites](#1-prerequisites)\
   1.a) [JDK](#1a-jdk)\
@@ -238,7 +242,7 @@ private AppVersion appVersion;
 
 @GetMapping("/ping")
 public String ping() {
-    return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace;
+    return appName + "(" + appVersion.getVersionLabel() + "): " + " in " + podNamespace;
 }
 ```
 
@@ -466,7 +470,8 @@ Then apply it using the following command.
 $ kubectl apply -f k8s/istio.yaml
 ```
 
-Create Istio `VirtualService` that references to `microservices-gateway` `Gateway`.\
+Create another file `istio-with-gateway.yaml` in directory callme-service/k8s.\
+Add Istio `VirtualService` that references to `microservices-gateway` `Gateway`.\
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService

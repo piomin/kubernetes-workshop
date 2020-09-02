@@ -12,15 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppVersion {
 
-	public String getVersionLabel() {
-		try (Stream<String> stream = Files.lines(Paths.get("/etc/podinfo/labels"))) {
-//			stream.forEach(System.out::println);
-			Optional<String> optVersion = stream.filter(it -> it.startsWith("version=")).findFirst();
-			return optVersion.map(s -> s.split("=")[1].replace("\"", ""))
-					.orElse("null");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "null";
-	}
+	// TODO - Add source code fragment from instruction
+
 }

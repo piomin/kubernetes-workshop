@@ -39,10 +39,8 @@ public class CallerController {
 	private AppVersion appVersion;
 
 	@GetMapping("/ping")
-	public String ping(@RequestHeader(name = "X-Version", required = false) String version) {
-		String callme = callme(version);
-		return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace
-				+ " is calling " + callme;
+	public String ping() {
+		return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace;
 	}
 
 	private String callme(String version) {
