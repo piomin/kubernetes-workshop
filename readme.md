@@ -29,12 +29,16 @@ With the source code version in `master` you can follow the instructions.
 ### 1. Prerequisites
 
 #### 1.a) JDK
-Check Java (JDK) version by calling `java --version`.
+Check Java (JDK) version by calling `java --version`. Version used in this workshop is 11.\
+You can download it here: https://www.oracle.com/java/technologies/javase-jdk11-downloads.html.
 
 #### 1.b) Git
-Check Git Client version by calling `git version`. 
+Check Git Client version by calling `git version`.\
+You can download it here: https://git-scm.com/downloads.
+ 
 #### 1.c) Maven
-Check Maven version by calling `mvn --version`.
+Check Maven version by calling `mvn --version`.\
+You can download it here: https://maven.apache.org/download.cgi.
 
 Example response:
 ```
@@ -44,19 +48,27 @@ Java version: 11.0.1, vendor: Oracle Corporation, runtime: C:\Program Files\jdk-
 ```
 
 #### 1.d) Skaffold
-Check Skaffold version by calling `skaffold version`.
+Check Skaffold version by calling `skaffold version`.\
+You can download it here: https://skaffold.dev/docs/install/.
 
 #### 1.e) Istio
-Check Istio CLI version by calling `istioctl version`.
+Check Istio CLI version by calling `istioctl version`.\
+You can download it here: https://github.com/istio/istio/releases/tag/1.7.2.
+
+#### 1.f) Docker Registry
+You need to have account on the remote Docker Registry like docker.io.\
+Your docker.io username is then referred as `YOUR_DOCKER_USERNAME`.
+
+#### 1.g) Existing cluster on GKE
 
 ### 2. Skaffold/Jib
 
 #### 2.a) Initialize Skaffold for projects
-My docker.io login is `piomin`, which is used then in case of pushing image to remote registry.
+My docker.io login is `piomin`, so I will just replace all occurrences of `<YOUR_DOCKER_USERNAME>` into `piomin`. It is used then in case of pushing image to remote registry.
 Go to callme-service `cd callme-service`.\
 Execute command `skaffold init --XXenableJibInit`.\
-You should message `One or more valid Kubernetes manifests are required to run skaffold`.\
-You should create a directory `k8s` and place there YAML manifest with `Deployment`.\
+You should see the message `One or more valid Kubernetes manifests are required to run skaffold`.\
+Then you should create a directory `k8s` and place there a YAML manifest with `Deployment`.\
 For example:\
 ```yaml
 apiVersion: apps/v1
@@ -74,8 +86,7 @@ spec:
     spec:
       containers:
       - name: callme
-        image: piomin/callme-service
-
+        image: <YOUR_DOCKER_USERNAME>/callme-service
         ports:
         - containerPort: 8080
 ```
@@ -89,7 +100,7 @@ metadata:
   name: callme-service
 build:
   artifacts:
-  - image: piomin/callme-service
+  - image: <YOUR_DOCKER_USERNAME>/callme-service
     jib:
       project: pl.piomin.samples.kubernetes:callme-service
 deploy:
@@ -105,7 +116,7 @@ metadata:
   name: callme-service
 build:
   artifacts:
-  - image: piomin/callme-service
+  - image: <YOUR_DOCKER_USERNAME>/callme-service
     jib: {}
 ```
 
@@ -145,10 +156,10 @@ metadata:
   name: kubernetes-workshop
 build:
   artifacts:
-    - image: piomin/callme-service
+    - image: <YOUR_DOCKER_USERNAME>/callme-service
       jib:
         project: callme-service
-    - image: piomin/caller-service
+    - image: <YOUR_DOCKER_USERNAME>/caller-service
       jib:
         project: caller-service
 deploy:
@@ -313,7 +324,7 @@ spec:
     spec:
       containers:
         - name: callme
-          image: piomin/callme-service
+          image: <YOUR_DOCKER_USERNAME>/callme-service
 
           ports:
             - containerPort: 8080
