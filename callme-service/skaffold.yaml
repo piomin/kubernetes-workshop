@@ -1,8 +1,8 @@
 apiVersion: skaffold/v2beta6
 kind: Config
 metadata:
-  name: caller-service
+  name: callme-service
 build:
   artifacts:
-    - image: cloudowski/caller-service
+    - image: cloudowski/callme-service
       jib: {}

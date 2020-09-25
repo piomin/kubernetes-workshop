@@ -4,7 +4,7 @@ With the source code version in `master` you can follow the instructions.
 
 ## Table of Contents
 1. [Prerequisites](#1-prerequisites)\
-  1.a) [JDK](#1a-jdk)\
+  1.a) [JDK](#1a-jdk)\  
   1.b) [Git](#1b-git)\
   1.c) [Maven](#1c-maven)\
   1.d) [Skaffold](#1d-skaffold)\
@@ -56,20 +56,43 @@ Check Istio CLI version by calling `istioctl version`.\
 You can download it here: https://github.com/istio/istio/releases/tag/1.7.2.
 
 #### 1.f) Docker Registry
-You need to have account on the remote Docker Registry like docker.io.\
+You need to have an account on the remote Docker Registry like docker.io.\
 Your docker.io username is then referred as `YOUR_DOCKER_USERNAME`.
 
 #### 1.g) Existing cluster on GKE
 
+Use `gcloud` command to initialize a new Kubernetes cluster using GKE services:
+
+```shell
+gcloud container clusters create cnw3 \
+   --zone europe-west3 \
+   --node-locations europe-west3-a,europe-west3-b,europe-west3-c \
+   --cluster-version=1.17 \
+   --disk-size=50GB \
+   --enable-autoscaling \
+   --num-nodes=1 \
+   --min-nodes=1 \
+   --max-nodes=3
+```
+
+After it has successfully started configure kubectl context:
+
+```shell
+gcloud container clusters get-credentials cnw3 --region=europe-west3
+```
+
 ### 2. Skaffold/Jib
 
 #### 2.a) Initialize Skaffold for projects
+
 My docker.io login is `piomin`, so I will just replace all occurrences of `<YOUR_DOCKER_USERNAME>` into `piomin`. It is used then in case of pushing image to remote registry.
 Go to callme-service `cd callme-service`.\
 Execute command `skaffold init --XXenableJibInit`.\
 You should see the message `One or more valid Kubernetes manifests are required to run skaffold`.\
-Then you should create a directory `k8s` and place there a YAML manifest with `Deployment`.\
-For example:\
+Then you should create a directory `k8s` and place there a YAML manifest (`deployment.yaml`) with `Deployment` object.
+
+For example:
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -90,9 +113,11 @@ spec:
         ports:
         - containerPort: 8080
 ```
+
 Now, execute command `skaffold init --XXenableJibInit` once again and accept communicate:\
 "Do you want to write this configuration to skaffold.yaml? [y/n]". -> y\
-The skaffold.yaml has been generated.\
+The skaffold.yaml has been generated.
+
 ```yaml
 apiVersion: skaffold/v2beta5
 kind: Config
@@ -108,7 +133,9 @@ deploy:
     manifests:
     - k8s/deployment.yaml
 ```
-You can remove all lines after line 8. 
+
+You can remove all lines after line 8.
+
 ```yaml
 apiVersion: skaffold/v2beta5
 kind: Config
@@ -123,21 +150,27 @@ build:
 Go to caller-service directory `cd caller-service`. Then perform all the same operations as for callme-service. 
 
 #### 2.b) Deploy applications in dev mode
+
 First, let's create a dedicated namespace for our workshop: `kubectl create ns workshop`. (optional)\
 Then let's set it as a default namespace for kubectl: `kubectl config set-context --current --namespace=workshop` (optional)\
-Go to callme-service directory and run Skaffold: `skaffold dev -n workshop --port-forward`.\
-Go to caller-service directory and run Skaffold: `skaffold dev -n workshop --port-forward`.\ 
+Go to callme-service directory and run Skaffold: `skaffold dev -n workshop --port-forward`\
+Go to caller-service directory and run Skaffold: `skaffold dev -n workshop --port-forward` 
 
 #### 2.c) Deploy applications in debug mode
-Go to callme-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
-Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\ 
+
+Go to callme-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`\
+Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward` 
 
 #### 2.d) Initialize Skaffold in multi-module mode
-Go to root directory of project `cd ..`. \
-Now, execute command `skaffold init --XXenableJibInit` in the root of Maven project:\
-First choose "None" [ENTER], then \
-"Do you want to write this configuration to skaffold.yaml? [y/n]". -> y\
-The skaffold.yaml has been generated.\
+
+Go to the root directory of the project (`cd ..`) \
+Now, execute command `skaffold init --XXenableJibInit` in the root of Maven project:
+
+First choose "None" for both questions  
+then  
+"Do you want to write this configuration to skaffold.yaml? [y/n]" -> y
+The skaffold.yaml has been generated.
+
 ```yaml
 apiVersion: skaffold/v2beta5
 kind: Config
@@ -148,7 +181,9 @@ deploy:
     manifests:
     - callme-service/k8s/deployment.yaml
 ```
+
 Let's modify the `skaffold.yaml` file into that:
+
 ```yaml
 apiVersion: skaffold/v2beta5
 kind: Config
@@ -169,12 +204,14 @@ deploy:
     - caller-service/k8s/*.yaml
     - k8s/*.yaml
 ```
-Then run Skaffold in dev mode: `skaffold dev -n workshop --port-forward`.\
+Then run Skaffold in dev mode: `skaffold dev -n workshop --port-forward`.
 
 ### 3. Development
 
 #### 3.a) Inject metadata into container
-Add the following environment variables to `Deployment` in section `spec.template.spec.containers`
+
+Add the following environment variables to `Deployment` in section `spec.template.spec.containers` in callme-service
+
 ```yaml
 env:
   - name: POD_NAME
@@ -188,7 +225,9 @@ env:
 ```
 
 #### 3.b) Add code
-Go to callme-service -> `src/main/java` -> `pl.piomin.samples.kubernetes.CallmeController` 
+
+Go to callme-service -> `src/main/java` -> `pl/piomin/samples/kubernetes/controller/CallmeController.java` and replace `public class CallmeController` definition with the following:
+
 ```java
 public class CallmeController {
 
@@ -208,7 +247,9 @@ public class CallmeController {
 ```
 
 #### 3.c) Inject labels with `downwardAPI`
-Add volume to section `spec.template.spec`
+
+Add volume to section `spec.template.spec` in callme-service and caller-service Deployment definitions
+
 ```yaml
 volumes:
 - name: podinfo
@@ -218,6 +259,7 @@ volumes:
         fieldRef:
           fieldPath: metadata.labels
 ```
+
 Then mount volume to the container:
 ```yaml
 volumeMounts:
@@ -226,7 +268,11 @@ volumeMounts:
 ```
 
 #### 3.d) Read and print labels inside application
-The implementation of bean responsible for reading `version` label from file inside a mounted volume is ready and visible below.
+
+The implementation of the bean responsible for reading `version` label from file inside a mounted volume is ready and visible below.
+
+Replace `public class AppVersion` definition `src/main/java/pl/piomin/samples/kubernetes/utils/AppVersion.java` with the followings:
+
 ```java
 @Component
 public class AppVersion {
@@ -245,9 +291,11 @@ public class AppVersion {
 }
 ```
 
-Go to callme-service -> `src/main/java` -> `pl.piomin.samples.kubernetes.CallmeController`.\
-Then inject `AppVersion` bean and invoke method `getVersionLabel` in `ping` method.
+Go to callme-service -> `src/main/java` -> `pl/piomin/samples/kubernetes/controller/CallmeController.java`.\
+Then inject `AppVersion` bean and invoke method `getVersionLabel` in `ping` method (replace the whole method with the following).
+
 ```
+
 @Autowired
 private AppVersion appVersion;
 
@@ -266,7 +314,8 @@ Reload is finished automatically. The last line in logs is similar to the follow
 Call HTTP endpoint `GET /callme/ping`: `curl http://localhost:8080/callme/ping`. \
 The response: `curl: (52) Empty reply from server`. \
 
-Add `Service` definition in `callme-service/k8s/deployment.yaml`:
+Add `Service` definition in `callme-service/k8s/service.yaml`:
+
 ```yaml
 ---
 apiVersion: v1
@@ -287,7 +336,7 @@ Port forwarding service/callme-service in namespace test, remote port 8080 -> ad
 ```
 
 Call the endpoint once again:
-```shell script
+```shell
 curl http://localhost:8080/callme/ping
 {"timestamp":"2020-08-17T12:41:24.492+00:00","status":500,"error":"Internal Server Error","message":"","path":"/callme/ping"}
 ```
@@ -295,18 +344,22 @@ curl http://localhost:8080/callme/ping
 Go to the logs. Try to fix error. In case you had problems with it or you just want to skip it the proper implementation of `AppVersion` is inside `caller-service`. \
 Go to caller-service -> `src/main/java` -> `pl.piomin.samples.kubernetes.utils.AppVersion`, and compare it with method in `callme-service`. \
 After fix call the endpoint once again:
-```shell script
+
+```shell
 curl http://localhost:8080/callme/ping
-callme-service(null): callme-deployment-6d94874588-gs9vw in test
+callme-service(null): callme-deployment-6d94874588-gs9vw in workshop
 ```
 
 #### 3.e) Deploy two versions of application
+
 Before any change stop command `skaffold dev` with CTRL+C to clean resources. \
 Go to `callme-service\k8s\deployment.yaml`. \
 Add to `spec.template.metadata.labels` and to `spec.selector.matchLabels` the new label `version: v1`. \
-Change the name of `Deployment` from `callme-deployment` to `callme-deployment`. \
-Then create a second deployment `callme-deployment-v2`. \
+Change the name of `Deployment` from `callme-deployment` to `callme-deployment-v1`. \
+Then create a second deployment `callme-deployment-v2` in the same file using the following definitionL:
+
 ```yaml
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -350,8 +403,8 @@ spec:
 ```
 
 After reload verify list of `Deployment` in your namespace.
-```shell script
-kubectl get deploy -n test
+```shell
+kubectl get deploy -n workshop
 NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
 callme-deployment-v1   1/1     1            1           88s
 callme-deployment-v2   1/1     1            1           88s
@@ -360,11 +413,13 @@ callme-deployment-v2   1/1     1            1           88s
 Call the endpoint once again: `curl http://localhost:8080/callme/ping`.
 
 #### 3.f) Deploy `caller-service`
+
 Go to `caller-service` directory. \
 Run `skaffold dev --port-forward`. You will probably have port 8081.
 Let's verify the state:
-```shell script
-$ kubectl get deploy -n test
+
+```shell
+$ kubectl get deploy -n workshop
 NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
 callme-deployment-v1   1/1     1            1           88s
 callme-deployment-v2   1/1     1            1           88s
@@ -375,17 +430,21 @@ caller-deployment-v2   1/1     1            1           44s
 Call the endpoint: `curl http://localhost:8080/caller/ping`.
 
 ### 4. Install Istio
+
 If running on the local cluster: `istioctl install`. \
-Enable Istio for your namespace: `kubectl label namespace <YOUR_NAMESPACE> istio-injection=enabled`. \
+Enable Istio for your namespace: `kubectl label namespace workshop istio-injection=enabled`. \
 After installation you can the following commands:
-```shell script
+
+```shell
 $ istioctl version
 client version: 1.6.5
 control plane version: 1.6.5
 data plane version: 1.6.5 (4 proxies)
 ```
+
 And then:
-```shell script
+
+```shell
 $ kubectl get pod -n istio-system
 NAME                                    READY   STATUS    RESTARTS   AGE
 istio-ingressgateway-54c4985b54-fhg7g   1/1     Running   0          1d
@@ -396,6 +455,7 @@ prometheus-547b4d6f8c-lrcbj             2/2     Running   0          1d
 ### 5. Configure traffic with Istio
 
 #### 5.a) Split across versions
+
 Go to callme-service/k8s directory. Create the file `istio.yml`. You can pick any name.
 Create `DestinationRule` with 2 subsets: `v1` and `v2`.\
 ```yaml
@@ -404,7 +464,7 @@ kind: DestinationRule
 metadata:
   name: callme-service-destination
 spec:
-  host: callme-service.test.svc.cluster.local
+  host: callme-service.workshop.svc.cluster.local
   subsets:
     - name: v1
       labels:
@@ -413,15 +473,17 @@ spec:
       labels:
         version: v2
 ```
+
 Create `VirtualService` with 3 routes splitted by HTTP header: `v1`, `v2`, no header.\
 ```yaml
+---
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: callme-service-route
 spec:
   hosts:
-    - callme-service.test.svc.cluster.local
+    - callme-service.workshop.svc.cluster.local
   http:
     - match:
         - headers:
@@ -429,7 +491,7 @@ spec:
               exact: v1
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
     - match:
         - headers:
@@ -437,29 +499,33 @@ spec:
               exact: v2
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
     - route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
 ```
+
 Run the following command to verify list of `VirtualService`.
-```shell script
-$ kubectl get vs -n test
+
+```shell
+$ kubectl get vs -n workshop
 NAME                   GATEWAYS   HOSTS                                     AGE
-callme-service-route              [callme-service.test.svc.cluster.local]   24s
+callme-service-route              [callme-service.workshop.svc.cluster.local]   24s
 ```
 
 #### 5.b) Create Istio gateway
-Create k8s in the root of project. Then create the file `istio.yml`.\
+
+Create `k8s` directory in the root of the project. Then create the file `istio.yml`.\
 Create Istio `Gateway` available on "any" host and port 80.\
 Omit creating `Gateway` if you are **not using your own Kubernetes instance**.
+
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
@@ -476,13 +542,16 @@ spec:
       hosts:
         - "*"
 ```
-Then apply it using the following command.
-```shell script
-$ kubectl apply -f k8s/istio.yaml
+
+Then apply it using the following command (actually it should be already applied by skaffold automatically).
+
+```shell
+kubectl apply -f k8s/istio.yaml
 ```
 
 Create another file `istio-with-gateway.yaml` in directory callme-service/k8s.\
-Add Istio `VirtualService` that references to `microservices-gateway` `Gateway`.\
+Add Istio `VirtualService` that references to `microservices-gateway` `Gateway`
+
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -504,7 +573,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
     - match:
         - uri:
@@ -516,7 +585,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
     - match:
         - uri:
@@ -525,49 +594,53 @@ spec:
         uri: " "
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
 ```
 
 Let's verify list of `VirtualService`.\
-```shell script
-$ kubectl get vs -n test
+```shell
+$ kubectl get vs -n workshop
 NAME                           GATEWAYS                  HOSTS                                     AGE
 callme-service-gateway-route   [microservices-gateway]   [*]                                       45s
-callme-service-route                                     [callme-service.test.svc.cluster.local]   15m
+callme-service-route                                     [callme-service.workshop.svc.cluster.local]   15m
 ```
 
-Verify address of `istio-ingressgateway` in `istio-system` namespace.\
-```shell script
+Verify address of `istio-ingressgateway` in `istio-system` namespace
+
+```shell
 kubectl get svc -n istio-system
 NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                      AGE
-istio-ingressgateway   LoadBalancer   10.110.87.104    localhost     15021:31846/TCP,80:31466/TCP,443:30947/TCP,15443:30736/TCP   41d
+istio-ingressgateway   LoadBalancer   10.110.87.104    1.2.3.4       15021:31846/TCP,80:31466/TCP,443:30947/TCP,15443:30736/TCP   41d
 istiod                 ClusterIP      10.106.253.175   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP,853/TCP                41d
 prometheus             ClusterIP      10.108.45.212    <none>        9090/TCP                                                     41d
 ```
 
 Let's `GET /callme/ping` endpoint with header `X-Version=v1`, `X-Version=v2` or `X-Version=null` 
-```shell script
-$ curl http://localhost/callme/callme/ping -H "X-Version:v1"
+
+```shell
+$ curl http://1.2.3.4/callme/callme/ping -H "X-Version:v1"
 callme-service(v1): callme-deployment-v1-57d8c69586-m67f5 in test
-$ curl http://localhost/callme/callme/ping -H "X-Version:v2"
+$ curl http://1.2.3.4/callme/callme/ping -H "X-Version:v2"
 callme-service(v2): callme-deployment-v2-774f46f699-tcpw8 in test
-$ curl http://localhost/callme/callme/ping
+$ curl http://1.2.3.4/callme/callme/ping
 callme-service(v2): callme-deployment-v2-774f46f699-tcpw8 in test
-$ curl http://localhost/callme/callme/ping
+$ curl http://1.2.3.4/callme/callme/ping
 callme-service(v1): callme-deployment-v1-57d8c69586-m67f5 in test
 ```
 
 #### 5.c) Inter-service communication
+
 Go to caller-service/src/main/java/pl/piomin/samples/kubernetes/controller directory.\
 Edit file `CallerController.java`. Then change existing endpoint implementation of `GET \caller\ping` endpoint.\
 You need to add `@RequestHeader`, invoke method `callme(version)`, and change return statement by adding response from callme-service.\
 The final implementation is visible below.
+
 ```java
 @RestController
 @RequestMapping("/caller")
@@ -595,7 +668,7 @@ $ kubectl get vs -n test
 NAME                           GATEWAYS                  HOSTS                                     AGE
 caller-service-gateway-route   [microservices-gateway]   [*]                                       24s
 callme-service-gateway-route   [microservices-gateway]   [*]                                       64m
-callme-service-route                                     [callme-service.test.svc.cluster.local]   79m
+callme-service-route                                     [callme-service.workshop.svc.cluster.local]   79m
 ```
 
 Then send some test requests with header `X-Version` set to `v1`, `v2` or not set.
@@ -620,6 +693,7 @@ fault:
       value: 50
     httpStatus: 400
 ```
+
 Similarly, add he following code to section `spec.http[1].route` defined for the `v2` version.
 ```yaml
 fault:
@@ -722,13 +796,13 @@ Although we receive a proper value with HTTP 200, the request has been retried b
 [caller-deployment-v1-78988d4cfb-tqhqh istio-proxy] [2020-09-02T13:56:58.788Z] "GET /callme/ping HTTP/1.1" 400 FI "-" "-" 0 18 0 - "-" "Java/11
 .0.6" "1bf27689-98bc-4058-819e-5750c21d1f8c" "callme-service:8080" "-" - - 10.106.101.0:8080 10.1.2.21:54776 - -
 [caller-deployment-v1-78988d4cfb-tqhqh istio-proxy] [2020-09-02T13:55:59.609Z] "- - -" 0 - "-" "-" 4425 783 59196 - "-" "-" "-" "-" "127.0.0.1:
-8080" inbound|8080||caller-service.test.svc.cluster.local 127.0.0.1:52466 10.1.2.21:8080 10.1.2.14:57982 outbound_.8080_.v1_.caller-service.test.svc.clu
+8080" inbound|8080||caller-service.workshop.svc.cluster.local 127.0.0.1:52466 10.1.2.21:8080 10.1.2.14:57982 outbound_.8080_.v1_.caller-service.workshop.svc.clu
 ster.local -
 [caller-deployment-v1-78988d4cfb-tqhqh istio-proxy] [2020-09-02T13:56:58.831Z] "GET /callme/ping HTTP/1.1" 200 - "-" "-" 0 65 5 5 "-" "Java/11.
-0.6" "b133ee29-a1d9-415b-bd3a-4364d50119f9" "callme-service:8080" "10.1.2.22:8080" outbound|8080|v1|callme-service.test.svc.cluster.local 10.1.2.21:5069
+0.6" "b133ee29-a1d9-415b-bd3a-4364d50119f9" "callme-service:8080" "10.1.2.22:8080" outbound|8080|v1|callme-service.workshop.svc.cluster.local 10.1.2.21:5069
 2 10.106.101.0:8080 10.1.2.21:54776 - -
 [caller-deployment-v1-78988d4cfb-tqhqh istio-proxy] [2020-09-02T13:55:58.327Z] "- - -" 0 - "-" "-" 1475 257 61516 - "-" "-" "-" "-" "127.0.0.1:
-8080" inbound|8080||caller-service.test.svc.cluster.local 127.0.0.1:52438 10.1.2.21:8080 10.1.2.14:57954 outbound_.8080_.v1_.caller-service.test.svc.clu
+8080" inbound|8080||caller-service.workshop.svc.cluster.local 127.0.0.1:52438 10.1.2.21:8080 10.1.2.14:57954 outbound_.8080_.v1_.caller-service.workshop.svc.clu
 ster.local -
 ```
 
@@ -767,7 +841,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v1
       retries:
         attempts: 3
@@ -782,7 +856,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v2
       timeout: 1s
       retries:
@@ -796,11 +870,11 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
 ```

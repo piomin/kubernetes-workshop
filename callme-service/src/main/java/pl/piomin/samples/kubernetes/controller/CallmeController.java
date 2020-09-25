@@ -13,6 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/callme")
 public class CallmeController {
 
-	// TODO - Add fragment of code from instruction
+	@Value("${spring.application.name}")
+	private String appName;
+	@Value("${POD_NAME}")
+	private String podName;
+	@Value("${POD_NAMESPACE}")
+	private String podNamespace;
+
+	@Autowired
+	private AppVersion appVersion;
+
+	@GetMapping("/ping")
+	public String ping() {
+		return appName + "(" + appVersion.getVersionLabel() + "): " + " in " + podNamespace;
+	}
 
 }

@@ -1,21 +1,7 @@
 apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: caller-service-destination
-spec:
-  host: caller-service.test.svc.cluster.local
-  subsets:
-    - name: v1
-      labels:
-        version: v1
-    - name: v2
-      labels:
-        version: v2
----
-apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: caller-service-gateway-route
+  name: callme-service-gateway-route
 spec:
   hosts:
     - "*"
@@ -27,16 +13,16 @@ spec:
             X-Version:
               exact: v1
           uri:
-            prefix: "/caller"
+            prefix: "/callme"
       rewrite:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
     - match:
         - uri:
-            prefix: "/caller"
+            prefix: "/callme"
           headers:
             X-Version:
               exact: v2
@@ -44,19 +30,19 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
     - match:
         - uri:
-            prefix: "/caller"
+            prefix: "/callme"
       rewrite:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
