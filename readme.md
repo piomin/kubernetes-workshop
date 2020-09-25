@@ -637,7 +637,7 @@ callme-service(v1): callme-deployment-v1-57d8c69586-m67f5 in test
 #### 5.c) Inter-service communication
 
 Go to caller-service/src/main/java/pl/piomin/samples/kubernetes/controller directory.\
-Edit file `CallerController.java`. Then change existing endpoint implementation of `GET \caller\ping` endpoint.\
+Edit file `CallerController.java`. Then change existing endpoint implementation of `GET /caller/ping` endpoint.\
 You need to add `@RequestHeader`, invoke method `callme(version)`, and change return statement by adding response from callme-service.\
 The final implementation is visible below.
 
@@ -663,8 +663,9 @@ public class CallerController {
 Deploy caller-service. Go to caller-service and run Skaffold: `skaffold dev -n test --port-forward`.\
 The starting version of Istio manifest `istio.yaml` is available in directory caller-service/k8s. Use it in the beginning. We will change it in the next steps.
 Then verify list of Istio virtual services.
-```shell script
-$ kubectl get vs -n test
+
+```shell
+$ kubectl get vs -n workshop
 NAME                           GATEWAYS                  HOSTS                                     AGE
 caller-service-gateway-route   [microservices-gateway]   [*]                                       24s
 callme-service-gateway-route   [microservices-gateway]   [*]                                       64m
@@ -672,20 +673,23 @@ callme-service-route                                     [callme-service.worksho
 ```
 
 Then send some test requests with header `X-Version` set to `v1`, `v2` or not set.
+
 ```shell script
-$ curl http://localhost/caller/caller/ping -H "X-Version:v1"
+$ curl http://1.2.3.4/caller/caller/ping -H "X-Version:v1"
 caller-service(v1): caller-deployment-v1-54f6486b5-4ltpw in test is calling callme-service(v1): callme-deployment-v1-64cb6c744d-9z7w2 in test
-$ curl http://localhost/caller/caller/ping -H "X-Version:v2"
+$ curl http://1.2.3.4/caller/caller/ping -H "X-Version:v2"
 caller-service(v2): caller-deployment-v2-67969c6cc6-rvsk4 in test is calling callme-service(v2): callme-deployment-v2-864494769c-lm7sg in test
-$ curl http://localhost/caller/caller/ping
+$ curl http://1.2.3.4/caller/caller/ping
 caller-service(v2): caller-deployment-v2-879ffc844-nqsd6 in test is calling callme-service(v2): callme-deployment-v2-864494769c-lm7sg in test
-$ curl http://localhost/caller/caller/ping
+$ curl http://1.2.3.4/caller/caller/ping
 caller-service(v2): caller-deployment-v2-879ffc844-nqsd6 in test is calling callme-service(v1): callme-deployment-v1-64cb6c744d-9z7w2 in test
 ```
 
 #### 5.d) Faults and timeouts
+
 Go to callme-service/k8s. Edit `istio.yml` file.
-Add the following code to section `spec.http[0].route` defined for the `v1` version.
+Add the following code to section `spec.http[0].route` defined for the `v1` version:
+
 ```yaml
 fault:
   abort:
@@ -694,7 +698,8 @@ fault:
     httpStatus: 400
 ```
 
-Similarly, add he following code to section `spec.http[1].route` defined for the `v2` version.
+Similarly, add the following code to section `spec.http[1].route` defined for the `v2` version.
+
 ```yaml
 fault:
   delay:
@@ -702,10 +707,12 @@ fault:
       value: 50
     fixedDelay: 3s
 ```
-Leave third route without any changes. Save files, the changes are applied automatically by skaffold.
+
+Leave the third route without any changes. Save files, the changes are applied automatically by skaffold.
 Let's call endpoint with `v1` version. Since 50% of requests are finished with HTTP 400 you may repeat the request several times. \
-```shell script
-$ curl http://localhost/caller/caller/ping -H "X-Version:v1"
+
+```shell
+$ curl http://1.2.3.4/caller/caller/ping -H "X-Version:v1"
 {"timestamp":"2020-09-02T13:10:43.136+00:00","status":500,"error":"Internal Server Error","message":"","path":"/caller/ping"}
 ```
 You should see the following log in caller-service.
@@ -716,7 +723,7 @@ mework.web.client.HttpClientErrorException$BadRequest: 400 Bad Request: [fault f
 ```
 
 Let's call endpoint with `v1` version. Since 50% of requests are delayed 3s you may repeat the request several times.
-```shell script
+```shell
 $ curl http://localhost/caller/caller/ping -H "X-Version:v2" -w "\nTime: %{time_total}\n" -v
 *   Trying ::1...
 * TCP_NODELAY set
@@ -739,18 +746,23 @@ on #0 to host localhost left intact
 
 Time: 3,093000
 ```
-There is fault injection in the following request, that does not contain version.
-```shell script
+
+There is a fault injection in the following request, that does not contain version.
+
+```shell
 $ curl http://localhost/caller/caller/ping
 ```
 
 Go to caller-service/k8s. Edit file `istio.yml`.
 Add the following line to the section `spec.http[0]`. Then save changes.
+
 ```yaml
 timeout: 1s
 ```
+
 Let's call caller-service with `v2`. The HTTP 504 Gateway Timeout is after 1s.
-```shell script
+
+```shell
 $ curl http://localhost/caller/caller/ping -H "X-Version:v2" -w "\nTime: %{time_total}\n" -v
 *   Trying ::1...
 * TCP_NODELAY set
@@ -771,13 +783,16 @@ upstream request timeout* Connection #0 to host localhost left intact
 
 Time: 1,094000
 ```
+
 Before the next step let's enable Envoy's access logs.
-```shell script
+
+```shell
 $ istioctl install --set meshConfig.accessLogFile="/dev/stdout"
 ```
 
 Go to caller-service/k8s. Edit file `istio.yaml`.
 Add the following line to the section `spec.http[0]`. Then save changes.
+
 ```yaml
 retries:
   attempts: 3
@@ -785,13 +800,15 @@ retries:
 ```
 
 Let's call endpoint caller-service with `v1`.
-```shell script
+
+```shell
 $ curl http://localhost/caller/caller/ping -H "X-Version:v1"
 caller-service(v1): caller-deployment-v1-78988d4cfb-tqhqh in test is calling callme-service(v1): callme-deployment-v1-6b5f5fdfb9-qtq52 in test
 ```
 
 Go to the logs available on the terminal with `skaffold dev` for caller-service.\
 Although we receive a proper value with HTTP 200, the request has been retried by Istio.
+
 ```
 [caller-deployment-v1-78988d4cfb-tqhqh istio-proxy] [2020-09-02T13:56:58.788Z] "GET /callme/ping HTTP/1.1" 400 FI "-" "-" 0 18 0 - "-" "Java/11
 .0.6" "1bf27689-98bc-4058-819e-5750c21d1f8c" "callme-service:8080" "-" - - 10.106.101.0:8080 10.1.2.21:54776 - -
@@ -808,18 +825,22 @@ ster.local -
 
 Go to caller-service/k8s. Edit file `istio.yaml`.
 Add the following line to the section `spec.http[1]`. Then save changes.
+
 ```yaml
 retries:
   attempts: 3
   retryOn: 5xx
   perTryTimeout: 0.33s
 ```
+
 Then call caller-service `v2`.
-```shell script
+
+```shell
 $ curl http://localhost/caller/caller/ping -H "X-Version:v2" -w "\nTime: %{time_total}\n" -v
 ```
 
 Here's the final `VirtualService` used in the part 5 of our exercise.
+
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
