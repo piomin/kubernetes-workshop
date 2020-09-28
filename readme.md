@@ -286,6 +286,8 @@ volumeMounts:
     name: podinfo
 ```
 
+Now, Then CTRL+C. Then go to callme-service and run again `skaffold dev -n workshop --port-forward`.
+ 
 #### 3.d) Read and print labels inside application
 The implementation of bean responsible for reading `version` label from file inside a mounted volume is ready and visible below.
 ```java
