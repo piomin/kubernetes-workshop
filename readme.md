@@ -543,7 +543,7 @@ $ kubectl apply -f k8s/istio.yaml
 ```
 
 Create another file `istio-with-gateway.yaml` in directory callme-service/k8s.\
-Add Istio `VirtualService` that references to `microservices-gateway` `Gateway`.\
+Add Istio `VirtualService` that references to `microservices-gateway` `Gateway`.
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -595,7 +595,7 @@ spec:
           weight: 80
 ```
 
-Let's verify list of `VirtualService`.\
+Let's verify list of `VirtualService`.
 ```shell script
 $ kubectl get vs -n test
 NAME                           GATEWAYS                  HOSTS                                     AGE
@@ -603,7 +603,7 @@ callme-service-gateway-route   [microservices-gateway]   [*]                    
 callme-service-route                                     [callme-service.test.svc.cluster.local]   15m
 ```
 
-Verify address of `istio-ingressgateway` in `istio-system` namespace.\
+Verify address of `istio-ingressgateway` in `istio-system` namespace.
 ```shell script
 kubectl get svc -n istio-system
 NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                      AGE
