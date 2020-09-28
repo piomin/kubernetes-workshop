@@ -8,7 +8,9 @@ With the source code version in `master` you can follow the instructions.
   1.b) [Git](#1b-git)\
   1.c) [Maven](#1c-maven)\
   1.d) [Skaffold](#1d-skaffold)\
-  1.e) [Istio](#1e-istio)
+  1.e) [Istio](#1e-istio)\
+  1.f) [Docker registry](#1f-docker-registry)\
+  1.g) [Existing cluster on GKE](#1g-existing-cluster-on-gke)
 2. [Skaffold/Jib](#2-skaffoldjib)\
   2.a) [Initialize Skaffold for projects](#2a-initialize-skaffold-for-projects)\
   2.b) [Deploy applications in dev mode](#2b-deploy-applications-in-dev-mode)\
@@ -60,6 +62,25 @@ You need to have account on the remote Docker Registry like docker.io.\
 Your docker.io username is then referred as `YOUR_DOCKER_USERNAME`.
 
 #### 1.g) Existing cluster on GKE
+Use `gcloud` command to initialize a new Kubernetes cluster using GKE services:
+
+```shell script
+gcloud container clusters create cnw3 \
+   --zone europe-west3 \
+   --node-locations europe-west3-a,europe-west3-b,europe-west3-c \
+   --cluster-version=1.17 \
+   --disk-size=50GB \
+   --enable-autoscaling \
+   --num-nodes=1 \
+   --min-nodes=1 \
+   --max-nodes=3
+```
+
+After it has successfully started configure kubectl context:
+
+```shell script
+gcloud container clusters get-credentials cnw3 --region=europe-west3
+```
 
 ### 2. Skaffold/Jib
 
@@ -120,6 +141,14 @@ build:
     jib: {}
 ```
 
+Finally, add the following fragment inside `build.plugins` tag.
+```xml
+<plugin>
+    <groupId>com.google.cloud.tools</groupId>
+    <artifactId>jib-maven-plugin</artifactId>
+    <version>2.4.0</version>
+</plugin>
+```
 Go to caller-service directory `cd caller-service`. Then perform all the same operations as for callme-service. 
 
 #### 2.b) Deploy applications in dev mode
@@ -188,7 +217,8 @@ env:
 ```
 
 #### 3.b) Add code
-Go to callme-service -> `src/main/java` -> `pl.piomin.samples.kubernetes.CallmeController` 
+Go to callme-service -> `src/main/java` -> `pl.piomin.samples.kubernetes.CallmeController`.\
+The name of package is just a proposition.\ 
 ```java
 public class CallmeController {
 
@@ -206,6 +236,20 @@ public class CallmeController {
 
 }
 ```
+Here's my current structure of the project:
+
+callme-service
+|-- k8s/
+|   |-- deployment.yaml
+|-- src/main/
+    |-- java/pl/piomin/samples/kubernetes/
+        |-- controller/
+            |-- CallmeController.java
+        |-- utils/
+            |-- AppVersion.java
+        |-- CallmeApplication.java
+    |-- resources/
+        |-- application.yml
 
 #### 3.c) Inject labels with `downwardAPI`
 Add volume to section `spec.template.spec`
