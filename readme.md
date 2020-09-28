@@ -110,7 +110,7 @@ spec:
         ports:
         - containerPort: 8080
 ```
-Then, add the following fragment inside `build.plugins` tag.
+Then, add the following fragment inside `build.plugins` tag in `callme-service/pom.xml`.
 ```xml
 <plugin>
     <groupId>com.google.cloud.tools</groupId>
@@ -156,19 +156,24 @@ You need to change <YOUR_DOCKER_USERNAME> into your login in `deployment.yaml`.
 First, let's create a dedicated namespace for our workshop: `kubectl create ns workshop`. (optional)\
 Then let's set it as a default namespace for kubectl: `kubectl config set-context --current --namespace=workshop` (optional)\
 Go to callme-service directory and run Skaffold: `skaffold dev -n workshop --port-forward`.\
-Go to caller-service directory and run Skaffold: `skaffold dev -n workshop --port-forward`.\ 
+Go to caller-service directory and run Skaffold: `skaffold dev -n workshop --port-forward`. 
 
 #### 2.c) Deploy applications in debug mode
 Go to callme-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
-Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
-Let's add a breakpoint on the 41 line of `pl.piomin.samples.kubernetes.controller.CallerController`.\ 
+Then you can find the following log:
+```
+Port forwarding pod/callme-deployment-6f595bb5f4-sgpvr in namespace workshop, remote port 5005 -> address 127.0.0.1 port 5005
+...
+Picked up JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y
+```
+Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.
 
 #### 2.d) Initialize Skaffold in multi-module mode
 Go to root directory of project `cd ..`. \
 Now, execute command `skaffold init --XXenableJibInit` in the root of Maven project:\
 First choose "None" [ENTER], then \
 "Do you want to write this configuration to skaffold.yaml? [y/n]". -> y\
-The skaffold.yaml has been generated.\
+The skaffold.yaml has been generated.
 ```yaml
 apiVersion: skaffold/v2beta5
 kind: Config
@@ -240,18 +245,18 @@ public class CallmeController {
 ```
 Here's my current structure of the project:
 
-callme-service
-|-- k8s/
-|   |-- deployment.yaml
-|-- src/main/
-    |-- java/pl/piomin/samples/kubernetes/
-        |-- controller/
-            |-- CallmeController.java
-        |-- utils/
-            |-- AppVersion.java
-        |-- CallmeApplication.java
-    |-- resources/
-        |-- application.yml
+callme-service\
+|-- k8s/\
+|   |-- deployment.yaml\
+|-- src/main/\
+    |-- java/pl/piomin/samples/kubernetes/\
+        |-- controller/\
+            |-- CallmeController.java\
+        |-- utils/\
+            |-- AppVersion.java\
+        |-- CallmeApplication.java\
+    |-- resources/\
+        |-- application.yml\
 
 #### 3.c) Inject labels with `downwardAPI`
 Add volume to section `spec.template.spec`
