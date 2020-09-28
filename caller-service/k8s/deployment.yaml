@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: caller
-        image: piomin/caller-service
+        image: <YOUR_DOCKER_USERNAME>/caller-service
 
         ports:
         - containerPort: 8080
@@ -31,47 +31,6 @@ spec:
         volumeMounts:
           - mountPath: /etc/podinfo
             name: podinfo
-      volumes:
-        - name: podinfo
-          downwardAPI:
-            items:
-              - path: "labels"
-                fieldRef:
-                  fieldPath: metadata.labels
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: caller-deployment-v2
-spec:
-  selector:
-    matchLabels:
-      app: caller
-      version: v2
-  template:
-    metadata:
-      labels:
-        app: caller
-        version: v2
-    spec:
-      containers:
-        - name: caller
-          image: piomin/caller-service
-
-          ports:
-            - containerPort: 8080
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-          volumeMounts:
-            - mountPath: /etc/podinfo
-              name: podinfo
       volumes:
         - name: podinfo
           downwardAPI:

@@ -149,7 +149,8 @@ Finally, add the following fragment inside `build.plugins` tag.
     <version>2.4.0</version>
 </plugin>
 ```
-Go to caller-service directory `cd caller-service`. Then perform all the same operations as for callme-service. 
+Go to caller-service directory `cd caller-service`. Then check if you have to add there anything else the same as for callme-service. 
+You need to change <YOUR_DOCKER_USERNAME> into your login in `deployment.yaml`.
 
 #### 2.b) Deploy applications in dev mode
 First, let's create a dedicated namespace for our workshop: `kubectl create ns workshop`. (optional)\
@@ -159,7 +160,8 @@ Go to caller-service directory and run Skaffold: `skaffold dev -n workshop --por
 
 #### 2.c) Deploy applications in debug mode
 Go to callme-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
-Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\ 
+Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
+Let's add a breakpoint on the 41 line of `pl.piomin.samples.kubernetes.controller.CallerController`.\ 
 
 #### 2.d) Initialize Skaffold in multi-module mode
 Go to root directory of project `cd ..`. \
@@ -307,8 +309,8 @@ Reload is finished automatically. The last line in logs is similar to the follow
  lmeApplication in 6.589 seconds (JVM running for 7.403)
 ```
 
-Call HTTP endpoint `GET /callme/ping`: `curl http://localhost:8080/callme/ping`. \
-The response: `curl: (52) Empty reply from server`. \
+Call HTTP endpoint `GET /callme/ping`: `curl http://localhost:8080/callme/ping`.\
+The response: `curl: (52) Empty reply from server`.
 
 Add `Service` definition in `callme-service/k8s/deployment.yaml`:
 ```yaml
