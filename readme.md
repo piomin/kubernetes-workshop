@@ -11,6 +11,7 @@ With the source code version in `master` you can follow the instructions.
   1.e) [Istio](#1e-istio)\
   1.f) [Docker registry](#1f-docker-registry)\
   1.g) [Existing cluster on GKE](#1g-existing-cluster-on-gke)
+  1.h) [Disable auto-save (optional)](#1h-optionally-disable-auto-save-on-your-ide)
 2. [Skaffold/Jib](#2-skaffoldjib)\
   2.a) [Initialize Skaffold for projects](#2a-initialize-skaffold-for-projects)\
   2.b) [Deploy applications in dev mode](#2b-deploy-applications-in-dev-mode)\
@@ -81,6 +82,12 @@ After it has successfully started configure kubectl context:
 ```shell script
 gcloud container clusters get-credentials cnw3 --region=europe-west3
 ```
+
+#### 1.h) Optionally disable auto-save on your IDE
+With Intellij go to File > Settings > Appearance & Behavior > System Settings.\
+Uncheck the following:\
+- Save files on frame deactivation\
+- Save files automatically if application is idle for x sec.
 
 ### 2. Skaffold/Jib
 
@@ -160,14 +167,16 @@ Go to caller-service directory and run Skaffold: `skaffold dev -n workshop --por
 
 #### 2.c) Deploy applications in debug mode
 Go to callme-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
-Then you can find the following log:
+Then you can find the following log (the number of forwarded port is important here):
 ```
 Port forwarding pod/callme-deployment-6f595bb5f4-sgpvr in namespace workshop, remote port 5005 -> address 127.0.0.1 port 5005
 ...
 Picked up JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y
 ```
-Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.
-
+Go to caller-service directory and run Skaffold: `skaffold debug -n workshop --port-forward`.\
+(Optional) Now we create a debugger. With IntelliJ go to Run -> Edit configurations... -> Templates -> Remote -> New...\
+Then set the port number and module name (demo).
+ 
 #### 2.d) Initialize Skaffold in multi-module mode
 Go to root directory of project `cd ..`. \
 Now, execute command `skaffold init --XXenableJibInit` in the root of Maven project:\
@@ -182,6 +191,7 @@ metadata:
 deploy:
   kubectl:
     manifests:
+    - caller-service/k8s/deployment.yaml
     - callme-service/k8s/deployment.yaml
 ```
 Let's modify the `skaffold.yaml` file into that:
@@ -205,7 +215,7 @@ deploy:
     - caller-service/k8s/*.yaml
     - k8s/*.yaml
 ```
-Then run Skaffold in dev mode: `skaffold dev -n workshop --port-forward`.\
+Then run Skaffold in dev mode: `skaffold dev -n workshop --port-forward`.
 
 ### 3. Development
 
