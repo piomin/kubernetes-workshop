@@ -87,10 +87,9 @@ gcloud container clusters get-credentials cnw3 --region=europe-west3
 #### 2.a) Initialize Skaffold for projects
 My docker.io login is `piomin`, so I will just replace all occurrences of `<YOUR_DOCKER_USERNAME>` into `piomin`. It is used then in case of pushing image to remote registry.
 Go to callme-service `cd callme-service`.\
-Execute command `skaffold init --XXenableJibInit`.\
-You should see the message `One or more valid Kubernetes manifests are required to run skaffold`.\
+Execute command `skaffold init --XXenableJibInit`. Then you should see the message `One or more valid Kubernetes manifests are required to run skaffold`.\
 Then you should create a directory `k8s` and place there a YAML manifest with `Deployment`.\
-For example:\
+For example:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -111,9 +110,18 @@ spec:
         ports:
         - containerPort: 8080
 ```
+Then, add the following fragment inside `build.plugins` tag.
+```xml
+<plugin>
+    <groupId>com.google.cloud.tools</groupId>
+    <artifactId>jib-maven-plugin</artifactId>
+    <version>2.4.0</version>
+</plugin>
+```
+
 Now, execute command `skaffold init --XXenableJibInit` once again and accept communicate:\
 "Do you want to write this configuration to skaffold.yaml? [y/n]". -> y\
-The skaffold.yaml has been generated.\
+The skaffold.yaml has been generated.
 ```yaml
 apiVersion: skaffold/v2beta5
 kind: Config
@@ -141,14 +149,6 @@ build:
     jib: {}
 ```
 
-Finally, add the following fragment inside `build.plugins` tag.
-```xml
-<plugin>
-    <groupId>com.google.cloud.tools</groupId>
-    <artifactId>jib-maven-plugin</artifactId>
-    <version>2.4.0</version>
-</plugin>
-```
 Go to caller-service directory `cd caller-service`. Then check if you have to add there anything else the same as for callme-service. 
 You need to change <YOUR_DOCKER_USERNAME> into your login in `deployment.yaml`.
 
