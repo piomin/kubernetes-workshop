@@ -366,7 +366,7 @@ Before any change stop command `skaffold dev` with CTRL+C to clean resources. \
 Go to `callme-service\k8s\deployment.yaml`. \
 Add to `spec.template.metadata.labels` and to `spec.selector.matchLabels` the new label `version: v1`. \
 Change the name of `Deployment` from `callme-deployment` to `callme-deployment`. \
-Then create a second deployment `callme-deployment-v2`. \
+Then create a second deployment `callme-deployment-v2`.
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -421,7 +421,7 @@ callme-deployment-v2   1/1     1            1           88s
 Call the endpoint once again: `curl http://localhost:8080/callme/ping`.
 
 #### 3.f) Deploy `caller-service`
-Go to `caller-service` directory. \
+Go to `caller-service` directory.\
 Run `skaffold dev --port-forward`. You will probably have port 8081.
 Let's verify the state:
 ```shell script
