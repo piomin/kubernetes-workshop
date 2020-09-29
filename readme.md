@@ -458,7 +458,7 @@ prometheus-547b4d6f8c-lrcbj             2/2     Running   0          1d
 
 #### 5.a) Split across versions
 Go to callme-service/k8s directory. Create the file `istio.yml`. You can pick any name.
-Create `DestinationRule` with 2 subsets: `v1` and `v2`.\
+Create `DestinationRule` with 2 subsets: `v1` and `v2`.
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
@@ -474,7 +474,7 @@ spec:
       labels:
         version: v2
 ```
-Create `VirtualService` with 3 routes splitted by HTTP header: `v1`, `v2`, no header.\
+Create `VirtualService` with 3 routes splitted by HTTP header: `v1`, `v2`, no header.
 ```yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
