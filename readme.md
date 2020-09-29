@@ -10,7 +10,7 @@ With the source code version in `master` you can follow the instructions.
   1.d) [Skaffold](#1d-skaffold)\
   1.e) [Istio](#1e-istio)\
   1.f) [Docker registry](#1f-docker-registry)\
-  1.g) [Existing cluster on GKE](#1g-existing-cluster-on-gke)
+  1.g) [Existing cluster on GKE](#1g-existing-cluster-on-gke)\
   1.h) [Disable auto-save (optional)](#1h-optionally-disable-auto-save-on-your-ide)
 2. [Skaffold/Jib](#2-skaffoldjib)\
   2.a) [Initialize Skaffold for projects](#2a-initialize-skaffold-for-projects)\
@@ -85,8 +85,8 @@ gcloud container clusters get-credentials cnw3 --region=europe-west3
 
 #### 1.h) Optionally disable auto-save on your IDE
 With Intellij go to File > Settings > Appearance & Behavior > System Settings.\
-Uncheck the following:\
-- Save files on frame deactivation\
+Uncheck the following:
+- Save files on frame deactivation
 - Save files automatically if application is idle for x sec.
 
 ### 2. Skaffold/Jib
@@ -256,17 +256,17 @@ public class CallmeController {
 Here's my current structure of the project:
 
 callme-service\
-|-- k8s/\
-|   |-- deployment.yaml\
-|-- src/main/\
-    |-- java/pl/piomin/samples/kubernetes/\
-        |-- controller/\
-            |-- CallmeController.java\
-        |-- utils/\
-            |-- AppVersion.java\
-        |-- CallmeApplication.java\
-    |-- resources/\
-        |-- application.yml\
+--k8s/\
+----deployment.yaml\
+--src/main/\
+----java/pl/piomin/samples/kubernetes/\
+------controller/\
+--------CallmeController.java\
+------utils/\
+--------AppVersion.java\
+------CallmeApplication.java\
+----resources/\
+------application.yml
 
 #### 3.c) Inject labels with `downwardAPI`
 Add volume to section `spec.template.spec`
