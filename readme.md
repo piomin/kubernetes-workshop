@@ -92,7 +92,7 @@ Uncheck the following:
 ### 2. Skaffold/Jib
 
 #### 2.a) Initialize Skaffold for projects
-My docker.io login is `piomin`, so I will just replace all occurrences of `<YOUR_DOCKER_USERNAME>` into `piomin`. It is used then in case of pushing image to remote registry.
+My docker.io login is `piomin`, so I will just replace all occurrences of `<YOUR_DOCKER_USERNAME>` into `piomin`. It is used then in case of pushing image to remote registry.\
 Go to callme-service `cd callme-service`.\
 Execute command `skaffold init --XXenableJibInit`. Then you should see the message `One or more valid Kubernetes manifests are required to run skaffold`.\
 Then you should create a directory `k8s` and place there a YAML manifest with `Deployment`.\
@@ -457,7 +457,7 @@ prometheus-547b4d6f8c-lrcbj             2/2     Running   0          1d
 ### 5. Configure traffic with Istio
 
 #### 5.a) Split across versions
-Go to callme-service/k8s directory. Create the file `istio.yml`. You can pick any name.
+Go to callme-service/k8s directory. Create the file `istio.yaml`. You can pick any name.
 Create `DestinationRule` with 2 subsets: `v1` and `v2`.
 ```yaml
 apiVersion: networking.istio.io/v1beta1
@@ -465,7 +465,7 @@ kind: DestinationRule
 metadata:
   name: callme-service-destination
 spec:
-  host: callme-service.test.svc.cluster.local
+  host: callme-service.workshop.svc.cluster.local
   subsets:
     - name: v1
       labels:
@@ -482,7 +482,7 @@ metadata:
   name: callme-service-route
 spec:
   hosts:
-    - callme-service.test.svc.cluster.local
+    - callme-service.workshop.svc.cluster.local
   http:
     - match:
         - headers:
@@ -490,7 +490,7 @@ spec:
               exact: v1
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
     - match:
         - headers:
@@ -498,27 +498,27 @@ spec:
               exact: v2
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
     - route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
 ```
 Run the following command to verify list of `VirtualService`.
 ```shell script
-$ kubectl get vs -n test
+$ kubectl get vs
 NAME                   GATEWAYS   HOSTS                                     AGE
 callme-service-route              [callme-service.test.svc.cluster.local]   24s
 ```
 
 #### 5.b) Create Istio gateway
-Create k8s in the root of project. Then create the file `istio.yml`.\
+Create k8s in the root of project. Then create the file `istio.yaml`.\
 Create Istio `Gateway` available on "any" host and port 80.\
 Omit creating `Gateway` if you are **not using your own Kubernetes instance**.
 ```yaml
@@ -565,7 +565,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
     - match:
         - uri:
@@ -577,7 +577,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
     - match:
         - uri:
@@ -586,18 +586,18 @@ spec:
         uri: " "
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
 ```
 
 Let's verify list of `VirtualService`.
 ```shell script
-$ kubectl get vs -n test
+$ kubectl get vs
 NAME                           GATEWAYS                  HOSTS                                     AGE
 callme-service-gateway-route   [microservices-gateway]   [*]                                       45s
 callme-service-route                                     [callme-service.test.svc.cluster.local]   15m
@@ -612,7 +612,8 @@ istiod                 ClusterIP      10.106.253.175   <none>        15010/TCP,1
 prometheus             ClusterIP      10.108.45.212    <none>        9090/TCP                                                     41d
 ```
 
-Let's `GET /callme/ping` endpoint with header `X-Version=v1`, `X-Version=v2` or `X-Version=null` 
+Let's `GET /callme/ping` endpoint with header `X-Version=v1`, `X-Version=v2` or `X-Version=null`.\
+Change `localhost` into your IP address in "EXTERNAL-IP"
 ```shell script
 $ curl http://localhost/callme/callme/ping -H "X-Version:v1"
 callme-service(v1): callme-deployment-v1-57d8c69586-m67f5 in test
@@ -648,7 +649,9 @@ public class CallerController {
 }
 ```
 
-Deploy caller-service. Go to caller-service and run Skaffold: `skaffold dev -n test --port-forward`.\
+Based on callme-service `DestinationRule` and `VirtualService` try to create the same set for caller-service. We need to create only a single `VirtualService` that refers to the gateway.
+
+Deploy caller-service. Go to caller-service and run Skaffold: `skaffold dev -n workshop --port-forward`.\
 The starting version of Istio manifest `istio.yaml` is available in directory caller-service/k8s. Use it in the beginning. We will change it in the next steps.
 Then verify list of Istio virtual services.
 ```shell script
@@ -731,7 +734,7 @@ There is fault injection in the following request, that does not contain version
 $ curl http://localhost/caller/caller/ping
 ```
 
-Go to caller-service/k8s. Edit file `istio.yml`.
+Go to caller-service/k8s. Edit file `istio.yaml`.
 Add the following line to the section `spec.http[0]`. Then save changes.
 ```yaml
 timeout: 1s
@@ -828,7 +831,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v1
       retries:
         attempts: 3
@@ -843,7 +846,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v2
       timeout: 1s
       retries:
@@ -857,11 +860,11 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v1
           weight: 20
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service.workshop.svc.cluster.local
             subset: v2
           weight: 80
 ```
