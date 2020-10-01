@@ -314,7 +314,7 @@ private AppVersion appVersion;
 
 @GetMapping("/ping")
 public String ping() {
-    return appName + "(" + appVersion.getVersionLabel() + "): " + " in " + podNamespace;
+    return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace;
 }
 ```
 
