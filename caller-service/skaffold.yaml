@@ -6,3 +6,6 @@ build:
   artifacts:
   - image: piomin/caller-service
     jib: {}
+deploy:
+  kubectl:
+    manifests: ["k8s/deployment.yaml", "k8s/istio.yaml"]

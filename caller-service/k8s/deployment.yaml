@@ -12,6 +12,8 @@ spec:
       labels:
         app: caller
         version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
       - name: caller
@@ -53,6 +55,8 @@ spec:
       labels:
         app: caller
         version: v2
+      annotations:
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
         - name: caller
@@ -90,3 +94,5 @@ spec:
     app: caller
   ports:
   - port: 8080
+    name: http
+    protocol: TCP

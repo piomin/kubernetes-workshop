@@ -12,6 +12,8 @@ spec:
       labels:
         app: callme
         version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
       - name: callme
@@ -53,6 +55,8 @@ spec:
       labels:
         app: callme
         version: v2
+      annotations:
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
         - name: callme
@@ -90,3 +94,5 @@ spec:
     app: callme
   ports:
   - port: 8080
+    name: http
+    protocol: TCP

@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: caller-service-destination
 spec:
-  host: caller-service.test.svc.cluster.local
+  host: caller-service
   subsets:
     - name: v1
       labels:
@@ -32,7 +32,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service
             subset: v1
       retries:
         attempts: 3
@@ -47,7 +47,7 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service
             subset: v2
       timeout: 1s
       retries:
@@ -61,10 +61,10 @@ spec:
         uri: " "
       route:
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service
             subset: v1
           weight: 20
         - destination:
-            host: caller-service.test.svc.cluster.local
+            host: caller-service
             subset: v2
           weight: 80

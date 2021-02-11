@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: callme-service-destination
 spec:
-  host: callme-service.test.svc.cluster.local
+  host: callme-service
   subsets:
     - name: v1
       labels:
@@ -18,7 +18,7 @@ metadata:
   name: callme-service-route
 spec:
   hosts:
-    - callme-service.test.svc.cluster.local
+    - callme-service
   http:
     - match:
         - headers:
@@ -26,7 +26,7 @@ spec:
               exact: v1
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service
             subset: v1
       fault:
         abort:
@@ -39,7 +39,7 @@ spec:
               exact: v2
       route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service
             subset: v2
       fault:
         delay:
@@ -48,10 +48,10 @@ spec:
           fixedDelay: 3s
     - route:
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service
             subset: v1
           weight: 20
         - destination:
-            host: callme-service.test.svc.cluster.local
+            host: callme-service
             subset: v2
           weight: 80
