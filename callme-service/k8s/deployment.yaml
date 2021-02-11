@@ -89,7 +89,7 @@ kind: Service
 metadata:
   name: callme-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: callme
   ports:
