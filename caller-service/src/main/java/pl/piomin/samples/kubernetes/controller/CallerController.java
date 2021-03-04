@@ -1,15 +1,14 @@
 package pl.piomin.samples.kubernetes.controller;
 
-import java.util.List;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
 import pl.piomin.samples.kubernetes.utils.AppVersion;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/caller")
 public class CallerController {
 
+	private static final Logger LOG = LoggerFactory.getLogger(CallerController.class);
 	private RestTemplate restTemplate;
 
 	CallerController(RestTemplate restTemplate) {
@@ -39,21 +39,20 @@ public class CallerController {
 	private AppVersion appVersion;
 
 	@GetMapping("/ping")
-	public String ping(@RequestHeader(name = "X-Version", required = false) String version) {
-		String callme = callme(version);
+	public String ping(@RequestHeader HttpHeaders headers) {
+		String callme = callme(headers);
 		return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace
 				+ " is calling " + callme;
 	}
 
-	private String callme(String version) {
+	private String callme(HttpHeaders headers) {
 		HttpEntity httpEntity = null;
-		if (version != null) {
-			MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-			map.put("X-Version", List.of(version));
-			httpEntity = new HttpEntity(map);
-		}
+		MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+		Set<String> headerNames = headers.keySet();
+		headerNames.forEach(it -> map.put(it, headers.get(it)));
+		httpEntity = new HttpEntity(map);
 		ResponseEntity<String> entity = restTemplate
-				.exchange("http://callme-service:8080/callme/ping", HttpMethod.GET, httpEntity, String.class);
+				.exchange("http://callme-service.pminkows-serverless.svc.cluster.local/callme/ping", HttpMethod.GET, httpEntity, String.class);
 		return entity.getBody();
 	}
 

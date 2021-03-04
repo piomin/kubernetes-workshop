@@ -19,7 +19,7 @@ public class AppVersion {
 			return optVersion.map(s -> s.split("=")[1].replace("\"", ""))
 					.orElse("null");
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return "null";
 	}

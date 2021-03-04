@@ -9,3 +9,9 @@ build:
 deploy:
   kubectl:
     manifests: ["k8s/deployment.yaml", "k8s/istio.yaml"]
+profiles:
+  - name: knative
+    deploy:
+      kubectl:
+        manifests:
+          - k8s/ksvc.yaml
