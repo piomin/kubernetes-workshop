@@ -20,37 +20,37 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/caller")
 public class CallerController {
 
-	private RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
-	CallerController(RestTemplate restTemplate) {
-		this.restTemplate = restTemplate;
-	}
+    CallerController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
-	@Value("${spring.application.name}")
-	private String appName;
-	@Value("${POD_NAME}")
-	private String podName;
-	@Value("${POD_NAMESPACE}")
-	private String podNamespace;
+    @Value("${spring.application.name}")
+    private String appName;
+    @Value("${POD_NAME}")
+    private String podName;
+    @Value("${POD_NAMESPACE}")
+    private String podNamespace;
 
-	@Autowired
-	private AppVersion appVersion;
+    @Autowired
+    private AppVersion appVersion;
 
-	@GetMapping("/ping")
-	public String ping() {
-		return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace;
-	}
+    @GetMapping("/ping")
+    public String ping() {
+        return appName + "(" + appVersion.getVersionLabel() + "): " + podName + " in " + podNamespace;
+    }
 
-	private String callme(String version) {
-		HttpEntity httpEntity = null;
-		if (version != null) {
-			MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-			map.put("X-Version", List.of(version));
-			httpEntity = new HttpEntity(map);
-		}
-		ResponseEntity<String> entity = restTemplate
-				.exchange("http://callme-service:8080/callme/ping", HttpMethod.GET, httpEntity, String.class);
-		return entity.getBody();
-	}
+    private String callme(String version) {
+        HttpEntity httpEntity = null;
+        if (version != null) {
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+            map.put("X-Version", List.of(version));
+            httpEntity = new HttpEntity(map);
+        }
+        ResponseEntity<String> entity = restTemplate
+                .exchange("http://callme-service:8080/callme/ping", HttpMethod.GET, httpEntity, String.class);
+        return entity.getBody();
+    }
 
 }
